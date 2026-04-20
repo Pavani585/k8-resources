@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ebs-static
+spec:
+  capacity:
+    storage: 15Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  csi:
+    driver: ebs.csi.aws.com
+    volumeHandle: vol-0b9c8e5f1a2b3c4d
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ebs-static-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ""
+  volumeName: ebs-static
+  resources:
+    requests:
+      storage: 15Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ebs-pod
+spec:
+  containers:
+    - name: app
+      image: nginx
+      volumeMounts:
+        - name: ebs-storage
+          mountPath: /usr/share/nginx/html
+  volumes:
+    - name: ebs-storage
+      persistentVolumeClaim:
+        claimName: ebs-static-claim
